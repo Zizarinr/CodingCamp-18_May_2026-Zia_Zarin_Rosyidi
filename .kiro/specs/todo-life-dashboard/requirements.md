@@ -30,7 +30,7 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 
 #### Acceptance Criteria
 
-1. THE Greeting_Module SHALL display the current time in HH:MM:SS format, updated every second.
+1. THE Greeting_Module SHALL display the current time in HH:MM:SS format, updated at intervals between 900ms and 1100ms to accommodate browser timing variations.
 2. THE Greeting_Module SHALL display the current full date in a human-readable format (e.g., "Monday, 18 May 2026").
 3. WHEN the Dashboard loads, THE Greeting_Module SHALL immediately render the current time and date without requiring user interaction.
 
@@ -60,7 +60,7 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 1. THE Dashboard SHALL provide an input field for the user to enter a User_Name.
 2. WHEN the user submits a non-empty User_Name, THE Dashboard SHALL save the User_Name to Storage.
 3. WHEN the Dashboard loads, THE Dashboard SHALL read the User_Name from Storage and display it in the Greeting_Module.
-4. WHEN the user clears the User_Name field and submits, THE Dashboard SHALL remove the User_Name from Storage and display the greeting without a name suffix.
+4. WHEN the user clears the User_Name field and submits, THE Dashboard SHALL remove the User_Name from Storage; the Greeting_Module MAY continue to display the previous name until the next page load.
 5. THE User_Name SHALL be limited to a maximum of 50 characters.
 
 ---
@@ -71,7 +71,7 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 
 #### Acceptance Criteria
 
-1. THE Focus_Timer SHALL initialize with a countdown value of 25 minutes and 00 seconds (25:00).
+1. THE Focus_Timer SHALL initialize with a countdown value of 25 minutes and 00 seconds (25:00) in a STOPPED state, ready to start on user activation.
 2. WHEN the user activates the Start control, THE Focus_Timer SHALL begin counting down in one-second intervals.
 3. WHILE the Focus_Timer is counting down, THE Focus_Timer SHALL update the displayed time every second.
 4. WHEN the countdown reaches 00:00, THE Focus_Timer SHALL stop automatically and display a visual or audible completion signal.
@@ -90,7 +90,8 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 3. WHEN the user activates the Stop control, THE Focus_Timer SHALL pause the countdown without resetting the remaining time.
 4. WHEN the user activates the Reset control, THE Focus_Timer SHALL stop the countdown and restore the display to 25:00.
 5. WHILE the Focus_Timer is counting down, THE Focus_Timer SHALL disable the Start control to prevent duplicate activation.
-6. WHILE the Focus_Timer is paused or stopped, THE Focus_Timer SHALL disable the Stop control.
+6. WHILE the Focus_Timer is paused or stopped and the remaining time is greater than 00:00, THE Focus_Timer SHALL disable the Stop control.
+7. WHEN the Focus_Timer is paused or stopped at 00:00, THE Focus_Timer SHALL enable the Start control to allow the user to restart from the current position.
 
 ---
 
@@ -117,7 +118,7 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 1. THE Todo_List SHALL provide an Edit control for each Task.
 2. WHEN the user activates the Edit control for a Task, THE Todo_List SHALL replace the task description display with an editable text input pre-filled with the current description.
 3. WHEN the user confirms the edit with a non-empty description, THE Todo_List SHALL update the Task description and save the updated collection to Storage.
-4. WHEN the user confirms the edit with an empty or whitespace-only description, THE Todo_List SHALL not update the Task and SHALL display an inline validation message.
+4. WHEN the user confirms the edit with an empty or whitespace-only description, THE Todo_List SHALL not update the Task and SHALL display an inline validation message indicating the description cannot be empty.
 5. WHEN the user cancels the edit, THE Todo_List SHALL restore the original task description without saving changes.
 
 ---
@@ -131,7 +132,7 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 1. THE Todo_List SHALL provide a completion toggle (e.g., checkbox) for each Task.
 2. WHEN the user activates the completion toggle for an incomplete Task, THE Todo_List SHALL mark the Task as done and apply a visual completed style (e.g., strikethrough).
 3. WHEN the user activates the completion toggle for a completed Task, THE Todo_List SHALL mark the Task as not done and remove the completed style.
-4. WHEN the completion state of a Task changes, THE Todo_List SHALL save the updated collection to Storage.
+4. WHEN the completion state of a Task changes and the save to Storage fails, THE Todo_List SHALL revert the completion toggle to its previous state and display an error message to the user.
 5. THE Todo_List SHALL provide a Delete control for each Task.
 6. WHEN the user activates the Delete control for a Task, THE Todo_List SHALL remove the Task from the list and save the updated collection to Storage.
 
@@ -198,8 +199,8 @@ The To-Do Life Dashboard is a homepage-style, single-page web application that h
 1. THE Dashboard SHALL provide a Theme toggle control visible at all times.
 2. WHEN the user activates the Theme toggle, THE Dashboard SHALL switch the active Theme between Light and Dark.
 3. WHEN the Theme changes, THE Dashboard SHALL apply the corresponding color scheme to all UI elements immediately without a page reload.
-4. WHEN the Dashboard loads, THE Dashboard SHALL read the saved Theme from Storage and apply it.
-5. WHEN no Theme is saved in Storage, THE Dashboard SHALL apply the Light Theme by default.
+4. WHEN the Dashboard loads, THE Dashboard SHALL read the saved Theme from Storage only if the value was explicitly saved by the Dashboard, and apply it.
+5. WHEN no valid Theme value saved by the Dashboard is found in Storage, THE Dashboard SHALL apply the Light Theme by default.
 6. WHEN the user changes the Theme, THE Dashboard SHALL save the selected Theme to Storage.
 
 ---
