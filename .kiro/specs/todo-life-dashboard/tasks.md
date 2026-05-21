@@ -8,15 +8,15 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
 
 ## Tasks
 
-- [ ] 1. Scaffold project files and HTML structure
+- [x] 1. Scaffold project files and HTML structure
   - Create `index.html` with semantic sectioning: `<header>` for theme toggle, `<main>` with four `<section>` elements for Greeting, Timer, Todo, and Quick Links, and a `<div id="storage-warning">` banner (hidden by default)
   - Create `css/style.css` with a CSS reset, CSS custom property declarations for both `[data-theme="light"]` and `[data-theme="dark"]` on `<html>`, and placeholder rule-sets for each section
   - Create `js/app.js` as an IIFE (`(function() { ... })()`) containing empty object stubs for `StorageService`, `ThemeManager`, `GreetingModule`, `FocusTimer`, `TodoList`, `QuickLinks`, and an `App` controller with an `init()` that calls each module's `init()` on `DOMContentLoaded`
   - Link `css/style.css` in `<head>` and `js/app.js` at the bottom of `<body>` with `defer`
   - _Requirements: 15.1, 15.2_
 
-- [ ] 2. Implement StorageService
-  - [ ] 2.1 Implement `StorageService.init()`, `.get()`, `.set()`, `.remove()`, and `.clear()`
+- [x] 2. Implement StorageService
+  - [x] 2.1 Implement `StorageService.init()`, `.get()`, `.set()`, `.remove()`, and `.clear()`
     - `init()`: probe availability with a `try/catch` around `localStorage.setItem('tld_probe', '1')` / `removeItem`; set `StorageService.available`
     - `get(key)`: wrap `JSON.parse(localStorage.getItem('tld_' + key))` in `try/catch`; on error call `remove(key)` and return `null`
     - `set(key, value)`: wrap `localStorage.setItem('tld_' + key, JSON.stringify(value))` in `try/catch`; catch `QuotaExceededError` and its vendor variants; return `false` on failure, `true` on success
@@ -24,19 +24,19 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - `clear()`: iterate `localStorage` keys and remove those starting with `tld_`
     - _Requirements: 14.1, 14.2, 14.4_
 
-  - [ ]* 2.2 Write property test for StorageService round-trip (Property 3)
+  - [x] 2.2 Write property test for StorageService round-trip (Property 3)
     - **Property 3: Task collection storage round-trip**
     - **Validates: Requirements 9.4, 14.1**
     - Use fast-check `fc.array(fc.record({ id: fc.string(), description: fc.string(), done: fc.boolean(), createdAt: fc.integer() }))` as the arbitrary; assert deep equality after set → get
 
-  - [ ]* 2.3 Write unit tests for StorageService error paths
+  - [x] 2.3 Write unit tests for StorageService error paths
     - Mock `localStorage.setItem` to throw `QuotaExceededError`; verify `set()` returns `false`
     - Set a non-JSON string directly in `localStorage`; verify `get()` returns `null` and key is removed
     - Mock `localStorage` to throw on probe; verify `available === false`
     - _Requirements: 14.2, 14.4_
 
-- [ ] 3. Implement ThemeManager
-  - [ ] 3.1 Implement `ThemeManager.init()`, `.apply()`, `.toggle()`, and `.current()`
+- [x] 3. Implement ThemeManager
+  - [-] 3.1 Implement `ThemeManager.init()`, `.apply()`, `.toggle()`, and `.current()`
     - `init()`: read `StorageService.get('theme')`; fall back to `'light'`; call `apply(theme)`; attach `click` listener to the theme toggle button
     - `apply(theme)`: set `document.documentElement.setAttribute('data-theme', theme)`; update toggle button label/icon to reflect the active theme
     - `toggle()`: flip `current()`, call `apply()`, call `StorageService.set('theme', newTheme)`

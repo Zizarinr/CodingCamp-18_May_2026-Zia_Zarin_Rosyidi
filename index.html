@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do Life Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Storage unavailable warning banner (hidden by default) -->
+  <div id="storage-warning" hidden role="alert" aria-live="polite">
+    ⚠ Local storage is unavailable. Your data will not be saved.
+  </div>
+
+  <!-- Site header: theme toggle -->
+  <header>
+    <button
+      id="theme-toggle"
+      aria-pressed="false"
+      aria-label="Toggle dark mode"
+    >
+      🌙 Dark Mode
+    </button>
+  </header>
+
+  <!-- Main content: four dashboard modules -->
+  <main>
+
+    <!-- Greeting Module: time, date, personalized greeting, name input -->
+    <section id="greeting">
+      <h2 id="greeting-text"></h2>
+      <p id="time-display"></p>
+      <p id="date-display"></p>
+      <form id="name-form">
+        <label for="name-input">Your name:</label>
+        <input
+          type="text"
+          id="name-input"
+          name="username"
+          maxlength="50"
+          placeholder="Enter your name"
+          autocomplete="off"
+        />
+        <button type="submit">Save</button>
+        <span id="name-error" role="alert" aria-live="polite"></span>
+      </form>
+    </section>
+
+    <!-- Focus Timer Module: 25-minute countdown with controls -->
+    <section id="timer">
+      <h2>Focus Timer</h2>
+      <div id="timer-display">25:00</div>
+      <div id="timer-controls">
+        <button id="timer-start" aria-label="Start timer">Start</button>
+        <button id="timer-stop" aria-label="Stop timer">Stop</button>
+        <button id="timer-reset" aria-label="Reset timer">Reset</button>
+      </div>
+      <p id="timer-message" role="alert" aria-live="polite"></p>
+    </section>
+
+    <!-- To-Do List Module: add, edit, complete, delete, sort tasks -->
+    <section id="todo">
+      <h2>To-Do List</h2>
+      <form id="todo-form">
+        <input
+          type="text"
+          id="todo-input"
+          name="task"
+          maxlength="200"
+          placeholder="Add a new task…"
+          autocomplete="off"
+        />
+        <button type="submit" aria-label="Add task">Add</button>
+        <span id="todo-error" role="alert" aria-live="polite"></span>
+      </form>
+      <div id="todo-sort">
+        <label for="sort-select">Sort:</label>
+        <select id="sort-select" aria-label="Sort tasks">
+          <option value="default">Default</option>
+          <option value="az">A–Z</option>
+          <option value="completed_last">Completed Last</option>
+        </select>
+      </div>
+      <ul id="todo-list" aria-label="Task list"></ul>
+    </section>
+
+    <!-- Quick Links Module: add and display shortcut buttons -->
+    <section id="quick-links">
+      <h2>Quick Links</h2>
+      <form id="links-form">
+        <input
+          type="text"
+          id="link-label-input"
+          name="label"
+          placeholder="Label"
+          autocomplete="off"
+        />
+        <input
+          type="url"
+          id="link-url-input"
+          name="url"
+          placeholder="https://example.com"
+          autocomplete="off"
+        />
+        <button type="submit" aria-label="Add link">Add</button>
+        <span id="links-error" role="alert" aria-live="polite"></span>
+      </form>
+      <div id="links-panel" aria-label="Quick links"></div>
+    </section>
+
+  </main>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "todo-life-dashboard",
+  "version": "1.0.0",
+  "description": "A vanilla HTML/CSS/JS To-Do Life Dashboard",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "fast-check": "3.23.2",
+    "vitest": "2.1.9"
+  }
+}
