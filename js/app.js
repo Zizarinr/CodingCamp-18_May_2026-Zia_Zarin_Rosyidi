@@ -103,27 +103,109 @@
   // ===========================================================================
 
   var GreetingModule = {
+    /** Cached username; null means no name set. */
+    _name: null,
+
     /**
      * Read User_Name from storage, render initial time/date/greeting,
      * start the clock interval, and attach the name-form submit listener.
      */
-    init: function () {},
+    init: function () {
+      // Read saved username from storage
+      var saved = StorageService.get('username');
+      GreetingModule._name = (typeof saved === 'string' && saved.length > 0) ? saved : null;
+
+      // Render immediately on load (Requirement 1.3)
+      var now = new Date();
+      var timeEl = document.getElementById('time-display');
+      var dateEl = document.getElementById('date-display');
+      var greetEl = document.getElementById('greeting-text');
+
+      if (timeEl) timeEl.textContent = GreetingModule.formatTime(now);
+      if (dateEl) dateEl.textContent = GreetingModule.formatDate(now);
+      if (greetEl) greetEl.textContent = GreetingModule.buildGreeting(now.getHours(), GreetingModule._name);
+
+      // Start 1-second clock interval
+      setInterval(GreetingModule.tick, 1000);
+
+      // Wire up the name form submit listener
+      var form = document.getElementById('name-form');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var input = document.getElementById('name-input');
+          var errorEl = document.getElementById('name-error');
+          var value = input ? input.value : '';
+          GreetingModule.setName(value, errorEl);
+          // Clear input and return focus (Requirement 3.1 / task spec)
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        });
+      }
+    },
 
     /** Called every ~1000 ms; updates time display and greeting text. */
-    tick: function () {},
+    tick: function () {
+      var now = new Date(); // fresh Date each tick — no drift accumulation
+      var timeEl = document.getElementById('time-display');
+      var greetEl = document.getElementById('greeting-text');
+
+      if (timeEl) timeEl.textContent = GreetingModule.formatTime(now);
+      if (greetEl) greetEl.textContent = GreetingModule.buildGreeting(now.getHours(), GreetingModule._name);
+    },
 
     /**
      * Validate, save, and re-render the greeting with the given name.
-     * @param {string} name
+     * @param {string} name  Raw value from the input field.
+     * @param {HTMLElement} [errorEl]  Optional element to display validation messages.
      */
-    setName: function (name) {},
+    setName: function (name, errorEl) {
+      var trimmed = (typeof name === 'string') ? name.trim() : '';
+
+      // Clear any previous error
+      if (errorEl) errorEl.textContent = '';
+
+      // Empty after trim → remove from storage (Requirement 3.4)
+      if (trimmed.length === 0) {
+        StorageService.remove('username');
+        GreetingModule._name = null;
+        var greetEl = document.getElementById('greeting-text');
+        if (greetEl) {
+          var now = new Date();
+          greetEl.textContent = GreetingModule.buildGreeting(now.getHours(), null);
+        }
+        return;
+      }
+
+      // Reject if > 50 chars (Requirement 3.5)
+      if (trimmed.length > 50) {
+        if (errorEl) errorEl.textContent = 'Name must be 50 characters or fewer.';
+        return;
+      }
+
+      // Save and re-render
+      StorageService.set('username', trimmed);
+      GreetingModule._name = trimmed;
+      var greetEl = document.getElementById('greeting-text');
+      if (greetEl) {
+        var now = new Date();
+        greetEl.textContent = GreetingModule.buildGreeting(now.getHours(), trimmed);
+      }
+    },
 
     /**
      * Pure function: map hour (0–23) to a greeting phrase.
      * @param {number} hour
      * @returns {string}
      */
-    getGreeting: function (hour) {},
+    getGreeting: function (hour) {
+      if (hour >= 5 && hour <= 11) return 'Good Morning';
+      if (hour >= 12 && hour <= 17) return 'Good Afternoon';
+      if (hour >= 18 && hour <= 20) return 'Good Evening';
+      return 'Good Night'; // 21–23 and 0–4
+    },
 
     /**
      * Pure function: combine greeting phrase with optional user name.
@@ -131,22 +213,51 @@
      * @param {string|null} name
      * @returns {string}
      */
-    buildGreeting: function (hour, name) {},
+    buildGreeting: function (hour, name) {
+      var phrase = GreetingModule.getGreeting(hour);
+      if (name && name.trim().length > 0) {
+        return phrase + ', ' + name;
+      }
+      return phrase;
+    },
 
     /**
      * Pure function: format a Date as HH:MM:SS.
      * @param {Date} date
      * @returns {string}
      */
-    formatTime: function (date) {},
+    formatTime: function (date) {
+      var hh = String(date.getHours()).padStart(2, '0');
+      var mm = String(date.getMinutes()).padStart(2, '0');
+      var ss = String(date.getSeconds()).padStart(2, '0');
+      return hh + ':' + mm + ':' + ss;
+    },
 
     /**
      * Pure function: format a Date as "Weekday, DD Month YYYY".
      * @param {Date} date
      * @returns {string}
      */
-    formatDate: function (date) {}
+    formatDate: function (date) {
+      var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+      var weekday = weekdays[date.getDay()];
+      var day = String(date.getDate()).padStart(2, '0');
+      var month = months[date.getMonth()];
+      var year = date.getFullYear();
+      return weekday + ', ' + day + ' ' + month + ' ' + year;
+    }
   };
+
+  // ===========================================================================
+  // FocusTimer — state constants
+  // ===========================================================================
+
+  var STOPPED = 'STOPPED';
+  var RUNNING = 'RUNNING';
+  var PAUSED  = 'PAUSED';
+  var DONE    = 'DONE';
 
   // ===========================================================================
   // FocusTimer
@@ -154,38 +265,160 @@
   // ===========================================================================
 
   var FocusTimer = {
+    /** @type {'STOPPED'|'RUNNING'|'PAUSED'|'DONE'} */
+    _state: STOPPED,
+
+    /** Remaining seconds (starts at 25 * 60 = 1500). */
+    _remaining: 1500,
+
+    /** setInterval handle; null when not running. */
+    _interval: null,
+
     /**
      * Render initial 25:00, attach button listeners, call updateControls().
+     * Implements Requirements 5.5, 5.6, 5.7.
      */
-    init: function () {},
+    init: function () {
+      // Render the initial 25:00 display (Requirement 4.1, 4.5)
+      FocusTimer.updateDisplay();
+
+      // Attach click listeners to Start, Stop, Reset buttons
+      var btnStart = document.getElementById('timer-start');
+      var btnStop  = document.getElementById('timer-stop');
+      var btnReset = document.getElementById('timer-reset');
+
+      if (btnStart) {
+        btnStart.addEventListener('click', function () {
+          FocusTimer.start();
+        });
+      }
+
+      if (btnStop) {
+        btnStop.addEventListener('click', function () {
+          FocusTimer.stop();
+        });
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener('click', function () {
+          FocusTimer.reset();
+        });
+      }
+
+      // Set initial enabled/disabled state of controls (Requirements 5.5, 5.6, 5.7)
+      FocusTimer.updateControls();
+    },
 
     /** Begin or resume the countdown (state → RUNNING). */
-    start: function () {},
+    start: function () {
+      if (FocusTimer._state === RUNNING) return; // guard: no duplicate intervals
+      FocusTimer._state = RUNNING;
+      FocusTimer._interval = setInterval(FocusTimer.tick, 1000);
+      FocusTimer.updateDisplay();
+      FocusTimer.updateControls();
+    },
 
     /** Pause the countdown without resetting (state → PAUSED). */
-    stop: function () {},
+    stop: function () {
+      if (FocusTimer._state !== RUNNING) return;
+      clearInterval(FocusTimer._interval);
+      FocusTimer._interval = null;
+      FocusTimer._state = PAUSED;
+      FocusTimer.updateDisplay();
+      FocusTimer.updateControls();
+    },
 
     /** Stop and restore remaining to 1500 s (state → STOPPED). */
-    reset: function () {},
+    reset: function () {
+      clearInterval(FocusTimer._interval);
+      FocusTimer._interval = null;
+      FocusTimer._remaining = 1500;
+      FocusTimer._state = STOPPED;
+      FocusTimer.updateDisplay();
+      FocusTimer.updateControls();
+    },
 
     /** Decrement remaining by 1; call onComplete() when it reaches 0. */
-    tick: function () {},
+    tick: function () {
+      FocusTimer._remaining -= 1;
+      FocusTimer.updateDisplay();
+      if (FocusTimer._remaining === 0) {
+        FocusTimer.onComplete();
+      }
+    },
 
     /** Called when remaining reaches 0; show completion signal (state → DONE). */
-    onComplete: function () {},
+    onComplete: function () {
+      clearInterval(FocusTimer._interval);
+      FocusTimer._interval = null;
+      FocusTimer._state = DONE;
+      FocusTimer.updateDisplay();
+      FocusTimer.updateControls();
+
+      // Visual completion signal: flash the display and update the message label
+      var display = document.getElementById('timer-display');
+      var message = document.getElementById('timer-message');
+
+      if (display) {
+        // Flash animation: add a CSS class that triggers a brief highlight
+        display.classList.add('timer-complete');
+        // Remove the class after the animation so it can be re-triggered on next session
+        setTimeout(function () {
+          display.classList.remove('timer-complete');
+        }, 3000);
+      }
+
+      if (message) {
+        message.textContent = '🎉 Focus session complete! Take a break.';
+      }
+    },
 
     /**
-     * Pure function: format seconds as MM:SS.
-     * @param {number} seconds
-     * @returns {string}
+     * Pure function: format seconds as MM:SS (zero-padded).
+     * @param {number} seconds  Non-negative integer.
+     * @returns {string}  e.g. "25:00", "04:07", "00:00"
      */
-    formatTime: function (seconds) {},
+    formatTime: function (seconds) {
+      var mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+      var ss = String(seconds % 60).padStart(2, '0');
+      return mm + ':' + ss;
+    },
 
-    /** Update the timer display DOM element. */
-    updateDisplay: function () {},
+    /** Update the timer display DOM element with the current remaining time. */
+    updateDisplay: function () {
+      var display = document.getElementById('timer-display');
+      if (display) {
+        display.textContent = FocusTimer.formatTime(FocusTimer._remaining);
+      }
+    },
 
-    /** Enable / disable Start, Stop, Reset buttons based on current state. */
-    updateControls: function () {}
+    /**
+     * Enable / disable Start, Stop, Reset buttons based on current state.
+     *
+     * Rules (Requirements 5.5, 5.6, 5.7):
+     *   - Start: disabled while RUNNING
+     *   - Stop:  disabled while PAUSED or STOPPED (when remaining > 0)
+     *   - Reset: always enabled
+     */
+    updateControls: function () {
+      var btnStart = document.getElementById('timer-start');
+      var btnStop  = document.getElementById('timer-stop');
+      var btnReset = document.getElementById('timer-reset');
+
+      if (btnStart) {
+        btnStart.disabled = (FocusTimer._state === RUNNING);
+      }
+
+      if (btnStop) {
+        // Disabled when PAUSED or STOPPED (remaining > 0), or DONE
+        btnStop.disabled = (FocusTimer._state !== RUNNING);
+      }
+
+      if (btnReset) {
+        // Reset is always enabled
+        btnReset.disabled = false;
+      }
+    }
   };
 
   // ===========================================================================

@@ -36,7 +36,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - _Requirements: 14.2, 14.4_
 
 - [x] 3. Implement ThemeManager
-  - [-] 3.1 Implement `ThemeManager.init()`, `.apply()`, `.toggle()`, and `.current()`
+  - [x] 3.1 Implement `ThemeManager.init()`, `.apply()`, `.toggle()`, and `.current()`
     - `init()`: read `StorageService.get('theme')`; fall back to `'light'`; call `apply(theme)`; attach `click` listener to the theme toggle button
     - `apply(theme)`: set `document.documentElement.setAttribute('data-theme', theme)`; update toggle button label/icon to reflect the active theme
     - `toggle()`: flip `current()`, call `apply()`, call `StorageService.set('theme', newTheme)`
@@ -54,8 +54,8 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - Verify default `'light'` is applied when no saved theme exists
     - _Requirements: 13.4, 13.5_
 
-- [ ] 4. Implement GreetingModule
-  - [ ] 4.1 Implement `GreetingModule.getGreeting()`, `buildGreeting()`, `formatTime()`, and `formatDate()`
+- [x] 4. Implement GreetingModule
+  - [x] 4.1 Implement `GreetingModule.getGreeting()`, `buildGreeting()`, `formatTime()`, and `formatDate()`
     - `getGreeting(hour)`: pure function mapping hour 0–23 to one of the four greeting strings per the algorithm in the design
     - `buildGreeting(hour, name)`: pure function; if name is non-empty return `phrase + ', ' + name`, else return phrase
     - `formatTime(date)`: return `HH:MM:SS` zero-padded string
@@ -70,7 +70,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - **Validates: Requirements 2.5**
     - Use `fc.integer({ min: 0, max: 23 })` and `fc.string({ minLength: 1 })` as arbitraries; assert result starts with `getGreeting(hour) + ', ' + name`
 
-  - [ ] 4.3 Implement `GreetingModule.init()`, `tick()`, and `setName()`
+  - [x] 4.3 Implement `GreetingModule.init()`, `tick()`, and `setName()`
     - `init()`: read `StorageService.get('username')`; render initial time/date/greeting; start `setInterval(tick, 1000)`; attach submit listener to the name input form
     - `tick()`: call `new Date()`, update time display via `formatTime`, update greeting via `buildGreeting`
     - `setName(name)`: trim and validate (max 50 chars); save to `StorageService`; re-render greeting
@@ -82,8 +82,8 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - Verify clock updates the displayed time on each tick
     - _Requirements: 2.6, 3.3_
 
-- [ ] 5. Implement FocusTimer
-  - [ ] 5.1 Implement `FocusTimer.formatTime()` and the state machine core
+- [x] 5. Implement FocusTimer
+  - [x] 5.1 Implement `FocusTimer.formatTime()` and the state machine core
     - `formatTime(seconds)`: pure function returning `MM:SS` zero-padded string
     - Define state constants: `STOPPED`, `RUNNING`, `PAUSED`, `DONE`
     - Implement `start()`, `stop()`, `reset()`, `tick()`, `onComplete()`, `updateDisplay()`, `updateControls()` per the state machine diagram in the design
@@ -92,7 +92,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - `reset()`: clear interval, set `remaining = 1500`, set state to `STOPPED`, call `updateDisplay()` and `updateControls()`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 5.3, 5.4_
 
-  - [ ] 5.2 Implement `FocusTimer.init()` and wire controls
+  - [x] 5.2 Implement `FocusTimer.init()` and wire controls
     - `init()`: render initial `25:00`, attach `click` listeners to Start, Stop, Reset buttons, call `updateControls()`
     - `updateControls()`: enable/disable Start, Stop, Reset based on current state per Requirements 5.5, 5.6, 5.7
     - _Requirements: 5.5, 5.6, 5.7_
@@ -108,7 +108,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - Verify Start is disabled while RUNNING; Stop is disabled while PAUSED/STOPPED with remaining > 0
     - _Requirements: 4.2, 4.3, 4.4, 5.5, 5.6, 5.7_
 
-- [ ] 6. Checkpoint — Ensure all tests pass
+- [x] 6. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Implement TodoList
