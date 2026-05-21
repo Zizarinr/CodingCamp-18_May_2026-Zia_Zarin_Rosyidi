@@ -785,50 +785,148 @@
   // ===========================================================================
 
   var QuickLinks = {
+    _links: [],
+
     /**
      * Load links from storage, render the panel,
      * and attach the Add-form submit listener.
      */
-    init: function () {},
+    init: function () {
+      var storedLinks = StorageService.get('links');
+      QuickLinks._links = Array.isArray(storedLinks) ? storedLinks : [];
+      QuickLinks.render();
+
+      var form = document.getElementById('links-form');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var labelInput = document.getElementById('link-label-input');
+          var urlInput = document.getElementById('link-url-input');
+          var label = labelInput ? labelInput.value : '';
+          var url = urlInput ? urlInput.value : '';
+          QuickLinks.addLink(label, url);
+        });
+      }
+    },
 
     /**
      * Validate, create, save, and re-render a new link.
      * @param {string} label
      * @param {string} url
      */
-    addLink: function (label, url) {},
+    addLink: function (label, url) {
+      var errorEl = document.getElementById('links-error');
+      if (errorEl) errorEl.textContent = '';
+
+      var trimmedLabel = (typeof label === 'string') ? label.trim() : '';
+      var trimmedUrl = (typeof url === 'string') ? url.trim() : '';
+
+      if (trimmedLabel.length === 0) {
+        if (errorEl) errorEl.textContent = 'Label cannot be empty.';
+        return;
+      }
+
+      if (!QuickLinks.validateUrl(trimmedUrl)) {
+        if (errorEl) errorEl.textContent = 'Invalid URL. Must be http:// or https://.';
+        return;
+      }
+
+      var link = {
+        id: (typeof crypto !== 'undefined' && crypto.randomUUID)
+              ? crypto.randomUUID()
+              : Date.now().toString(),
+        label: trimmedLabel,
+        url: trimmedUrl
+      };
+
+      QuickLinks._links.push(link);
+      QuickLinks.save();
+      QuickLinks.render();
+
+      var labelInput = document.getElementById('link-label-input');
+      var urlInput = document.getElementById('link-url-input');
+      if (labelInput) labelInput.value = '';
+      if (urlInput) urlInput.value = '';
+      if (labelInput) labelInput.focus();
+    },
 
     /**
      * Remove a link by id, save, and re-render.
      * @param {string} id
      */
-    deleteLink: function (id) {},
+    deleteLink: function (id) {
+      QuickLinks._links = QuickLinks._links.filter(function (l) { return l.id !== id; });
+      QuickLinks.save();
+      QuickLinks.render();
+    },
 
     /**
      * Open a URL in a new tab.
      * @param {string} url
      */
-    openLink: function (url) {},
+    openLink: function (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    },
 
     /**
      * Validate a URL string (must parse via URL constructor with http/https scheme).
      * @param {string} url
      * @returns {boolean}
      */
-    validateUrl: function (url) {},
+    validateUrl: function (url) {
+      try {
+        var parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch (_e) {
+        return false;
+      }
+    },
 
     /** Clear the links panel DOM and re-render all links. */
-    render: function () {},
+    render: function () {
+      var panel = document.getElementById('links-panel');
+      if (!panel) return;
+      panel.innerHTML = '';
+      QuickLinks._links.forEach(function (link) {
+        var el = QuickLinks.renderLink(link);
+        if (el) panel.appendChild(el);
+      });
+    },
 
     /**
      * Build and return a single link button element.
      * @param {Object} link
      * @returns {HTMLElement}
      */
-    renderLink: function (link) {},
+    renderLink: function (link) {
+      var div = document.createElement('div');
+      div.className = 'quick-link';
+
+      var openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.textContent = link.label;
+      openBtn.setAttribute('aria-label', 'Open link: ' + link.label);
+      openBtn.addEventListener('click', function () {
+        QuickLinks.openLink(link.url);
+      });
+
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.textContent = 'Delete';
+      delBtn.setAttribute('aria-label', 'Delete link: ' + link.label);
+      delBtn.addEventListener('click', function () {
+        QuickLinks.deleteLink(link.id);
+      });
+
+      div.appendChild(openBtn);
+      div.appendChild(delBtn);
+      return div;
+    },
 
     /** Serialize links to storage. */
-    save: function () {}
+    save: function () {
+      return StorageService.set('links', QuickLinks._links);
+    }
   };
 
   // ===========================================================================
@@ -840,6 +938,14 @@
     /** Initialize all modules in dependency order. */
     init: function () {
       StorageService.init();
+
+      if (StorageService.available === false) {
+        var warningEl = document.getElementById('storage-warning');
+        if (warningEl) {
+          warningEl.removeAttribute('hidden');
+        }
+      }
+
       ThemeManager.init();
       GreetingModule.init();
       FocusTimer.init();
@@ -851,6 +957,16 @@
   // ---------------------------------------------------------------------------
   // Bootstrap
   // ---------------------------------------------------------------------------
+
+  if (typeof window !== 'undefined') {
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.error('Unhandled error:', message, 'at', source + ':' + lineno + ':' + colno, error);
+    };
+
+    window.addEventListener('unhandledrejection', function (event) {
+      console.error('Unhandled promise rejection:', event.reason);
+    });
+  }
 
   document.addEventListener('DOMContentLoaded', function () {
     App.init();
