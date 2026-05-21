@@ -111,8 +111,8 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
 - [x] 6. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Implement TodoList
-  - [ ] 7.1 Implement `TodoList.getSortedTasks()` and data helpers
+- [x] 7. Implement TodoList
+  - [x] 7.1 Implement `TodoList.getSortedTasks()` and data helpers
     - `getSortedTasks(tasks, order)`: pure function; spread `[...tasks]` before sorting; implement all three sort orders (`default`, `az`, `completed_last`) per the algorithm in the design
     - Define `Task` factory: `{ id: crypto.randomUUID() || Date.now().toString(), description, done: false, createdAt: Date.now() }`
     - _Requirements: 10.1, 10.2_
@@ -128,7 +128,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - **Validates: Requirements 10.1**
     - Assert every adjacent pair satisfies `localeCompare <= 0`
 
-  - [ ] 7.3 Implement `TodoList.addTask()`, `editTask()`, `toggleTask()`, and `deleteTask()`
+  - [x] 7.3 Implement `TodoList.addTask()`, `editTask()`, `toggleTask()`, and `deleteTask()`
     - `addTask(desc)`: trim and validate (non-empty, ≤ 200 chars); create Task; push to collection; call `save()`; call `render()`; on validation failure show inline error
     - `editTask(id, newDesc)`: trim and validate; update matching task's `description`; call `save()`; call `render()`; on validation failure show inline error without saving
     - `toggleTask(id)`: flip `done`; call `save()`; if `save()` returns `false` revert `done` and show inline error
@@ -149,7 +149,7 @@ Implement the To-Do Life Dashboard as three static files (`index.html`, `css/sty
     - **Validates: Requirements 8.6**
     - Assert target id absent; all other tasks present with original field values
 
-  - [ ] 7.5 Implement `TodoList.renderTask()`, `render()`, `save()`, `setSortOrder()`, and `init()`
+  - [x] 7.5 Implement `TodoList.renderTask()`, `render()`, `save()`, `setSortOrder()`, and `init()`
     - `renderTask(task)`: build a task row `<li>` with checkbox, description span, Edit button, Delete button; attach inline event listeners
     - `render()`: clear list DOM; call `getSortedTasks(tasks, sortOrder)`; append each `renderTask()` result
     - `save()`: call `StorageService.set('tasks', tasks)`; return the boolean result
